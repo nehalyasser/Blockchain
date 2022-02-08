@@ -68,7 +68,6 @@ class BlockChain:
 
         timee = time.time()
         genesis_block = Ledger("0", "", str(timee), "0")
-        #genesis_block_hash = genesis_block.compute_hash
         # print("aaa")
         # print(genesis_block.block_hash)
         # print(genesis_block.blockTotalData)
@@ -77,7 +76,6 @@ class BlockChain:
 
     # This function is created
     # to display the previous block
-
     def print_previous_block(self):
         return self.chain[-1]
 
@@ -96,8 +94,6 @@ class BlockChain:
     # Function that add block to a chain
     def add_block(self, block, hash):
         """
-        A function that adds the block to the chain after verification.
-        Verification includes:
         * Checking if the proof is valid.
         * The previous_hash referred in the block and the hash of latest block
           in the chain match.
@@ -120,22 +116,66 @@ class BlockChain:
         if not len(self.unconfirmed_transactions):
             return False
 
-        # print("xx")
         transaction = check_transaction(self.unconfirmed_transactions)
-        # print(transaction)
         last = self.print_previous_block()
         last_hash = self.prev_hash()
         timee = time.time()
         index = int(last.index) + 1
         new_block = Ledger(str(index), transaction,
                            str(timee), last_hash)
-        #proof = new_block.proof
         hash = new_block.block_hash
-        # print(hash)
         x = self.add_block(new_block, hash)
         print(x)
-        self.unconfirmed_transactions = []
-        return new_block.index
+        if x:
+            self.unconfirmed_transactions = []
+            return new_block.index, True
+        else:
+            return new_block, False
+
+
+class Chain:
+    def __init__(self, block):
+        self.chain = []
+        self.chain.append(block)
+        self.index = int(block.index)
+
+    # This function is created
+    # to display the previous block
+    def print_previous_block(self):
+        return self.chain[-1]
+
+    def prev_hash(self):
+        return ((self.print_previous_block()).block_hash)
+
+    def is_valid_hash(self, block, block_hash):
+        return (block_hash.startswith('0' * Zeros) and
+                block_hash == block.compute_hash())
+
+    # Function that add block to a chain
+    def add_block(self, block, hash):
+        """
+        * Checking if the proof is valid.
+        * The previous_hash referred in the block and the hash of latest block
+          in the chain match.
+        """
+        previous_hash = block.prevHash
+        print("add_block")
+        print(previous_hash)
+        print(block.prevHash)
+        if previous_hash != block.prevHash:
+            return False
+
+        if not self.is_valid_hash(block, hash):
+            return False
+
+        self.chain.append(block)
+        return True
+
+    def mining(self, block):
+        hash = block.block_hash
+        x = self.add_block(block, hash)
+        print(x)
+
 # function to generate random transactions
 
 
