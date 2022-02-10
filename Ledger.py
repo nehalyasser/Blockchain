@@ -29,9 +29,6 @@ class Ledger:
         self.timestamp = timestamp
         self.prevHash = prevHash
         self.proof = self.calculate_proof_work()
-        self.blockTotalData = self.index + \
-            " - " + self.transactions + " - " + self.timestamp + \
-            " - " + self.prevHash + " - " + self.proof
         self.block_hash = self.compute_hash()
 
     def calculate_proof_work(self):
@@ -52,7 +49,10 @@ class Ledger:
         return -1
 
     def compute_hash(self):
-        return hashlib.sha256(self.blockTotalData.encode()).hexdigest()
+        blockTotalData=self.index + \
+            " - " + self.transactions + " - " + self.timestamp + \
+            " - " + self.prevHash + " - " + self.proof
+        return hashlib.sha256(blockTotalData.encode()).hexdigest()
 
     def get_hash(self):
         return self.block_hash
@@ -110,6 +110,7 @@ class BlockChain:
     def mining(self, prev_hash):
         if not len(self.unconfirmed_transactions):
             return False
+        start_time=time.time()
         transaction = check_transaction(self.unconfirmed_transactions)
         last = self.print_previous_block()
         last_hash = prev_hash
@@ -121,6 +122,9 @@ class BlockChain:
         x = self.add_block(new_block, hash)
         if x:
             self.unconfirmed_transactions = []
+            end_time=time.time()
+            while((end_time-start_time)<1):
+                end_time=time.time()
             return new_block.index, True
         else:
             return new_block, False
@@ -183,6 +187,7 @@ class Chainn:
                                str(timee), last_hash)
             hash = new_block.block_hash
             x = self.add_block(new_block, hash)
+
         if x:
             self.unconfirmed_transactions = []
             return new_block.index, True
@@ -229,7 +234,7 @@ def append_longest_chain(c1, main):
         for x in range(len(c1.chain)):
             main.chain.append(c1.chain[x])
 
-
+# Start main coding
 # First for loop to generate the main Block:
 main_chain = BlockChain()
 ti = 0
@@ -246,7 +251,7 @@ for x in range(4):
     time2 = time.time()
     ti = ti+(time2-time1)
     Avg_time = ti/4
-    print(x)
+    #print(x)
 
 for x in main_chain.chain:
     print(x.__dict__)
@@ -281,21 +286,21 @@ for x in range(5):
 longest = c1.longest_chain(c2)
 append_longest_chain(longest, main_chain)
 
-print("Printing of C1")
+print("Printing of minors branch")
 for x in c1.chain:
     print(x.__dict__)
 
-print("Printing of C2")
+print("Printing of attacking branch")
 for x in c2.chain:
     print(x.__dict__)
 
-print("Longest chain is ")
+print("Longest branch is ")
 for x in (c1.longest_chain(c2)).chain:
     print(x.__dict__)
 
-print("Whole Chain is ")
+print("Whole Chain after attacking is ")
 for x in main_chain.chain:
     print(x.__dict__)
 
-print("Average time taken for a block")
+print("Average time taken for mining a block")
 print(Avg_time)
