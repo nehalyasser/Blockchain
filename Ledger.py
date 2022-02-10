@@ -17,7 +17,7 @@ prev_hash_attacker = ""
 prev_hash_others = ""
 attacker_index = ""
 others_index = ""
-attacker_precentage = 600
+attacker_precentage = 200
 
 
 class Ledger:
@@ -197,18 +197,13 @@ class Chainn:
     def longest_chain(self, compared_chain):
         first_chain_last_index = self.print_previous_block().index
         second_chain_last_index = compared_chain.print_previous_block().index
-        print(first_chain_last_index)
-        print(second_chain_last_index)
-
-        if ((first_chain_last_index) > (second_chain_last_index)):
+        if (int(first_chain_last_index) > int(second_chain_last_index)):
             return self
         else:
             return compared_chain
 
 
 # function to generate random transactions
-
-
 def generation():
     transaction = ''.join(random.choice(transaction_list))
     return transaction
@@ -233,8 +228,8 @@ def append_longest_chain(c, main):
         for x in range(1, len(c.chain)):
             main.chain.append(c.chain[x])
     else:
-        for x in range(len(c1.chain)):
-            main.chain.append(c1.chain[x])
+        for x in range(len(c.chain)):
+            main.chain.append(c.chain[x])
 
 # Start main coding
 # First for loop to generate the main Block:
