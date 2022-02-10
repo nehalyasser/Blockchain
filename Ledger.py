@@ -1,15 +1,23 @@
 import hashlib
+from operator import truediv
 import string
 import time
 import random
 
-i = 0
-Zeros = 4
+i = 5
+Zeros = 2
 transaction_list = ["Anna Sends Mike 100", "Mike sends Bob 200 LE",
                     "Bob sends Micheal 50 LE", "Anna sends Micheal 170 LE",
                     "Bob sends Anna 60 LE", "Micheal sends Anna 100 LE",
                     "Micheal sends Mike 150 LE", "Mike sends Anna 60 LE",
-                    "Mike sends Micheal 100 LE"]
+                    "Mike sends Micheal 100 LE", "Mahsun sends Mike 80 LE",
+                    "Anne sends Mahsun 150 LE", "Micheal Sends Mahsun 200 LE"]
+prev_hash_main = ""
+prev_hash_attacker = ""
+prev_hash_others = ""
+attacker_index = ""
+others_index = ""
+attacker_precentage = 600
 
 
 class Ledger:
@@ -41,16 +49,15 @@ class Ledger:
                 self.prevHash + " - " + str(proof)
             blockHash = hashlib.sha256(block.encode()).hexdigest()
             if blockHash.startswith('0' * Zeros):
-                print(blockHash)
+                # print(blockHash)
                 proofFound = True
             if proofFound is True:
-                print(proof)
-                print(self.index)
+                # print(proof)
+                # print(self.index)
                 return proof
         return -1
 
     def compute_hash(self):
-        # print(hashlib.sha256(self.blockTotalData.encode()).hexdigest())
         return hashlib.sha256(self.blockTotalData.encode()).hexdigest()
 
     def get_hash(self):
@@ -68,10 +75,6 @@ class BlockChain:
 
         timee = time.time()
         genesis_block = Ledger("0", "", str(timee), "0")
-        # print("aaa")
-        # print(genesis_block.block_hash)
-        # print(genesis_block.blockTotalData)
-        # print("zz")
         self.chain.append(genesis_block)
 
     # This function is created
@@ -87,6 +90,11 @@ class BlockChain:
         # print(transaction)
         self.unconfirmed_transactions.append(transaction)
 
+    def get_unconfirmed_transaction(self):
+        t = self.unconfirmed_transactions
+        self.unconfirmed_transactions = []
+        return t
+
     def is_valid_hash(self, block, block_hash):
         return (block_hash.startswith('0' * Zeros) and
                 block_hash == block.compute_hash())
@@ -100,10 +108,11 @@ class BlockChain:
         """
         previous_hash = (self.prev_hash())
         print("add_block")
-        print(previous_hash)
-        print(block.prevHash)
+        # print(previous_hash)
+        # print(block.prevHash)
         if previous_hash != block.prevHash:
-            return False
+            self.unconfirmed_transactions = []
+            return False, block.transactions
 
         if not self.is_valid_hash(block, hash):
             return False
@@ -112,13 +121,13 @@ class BlockChain:
         self.chain.append(block)
         return True
 
-    def mining(self):
+    def mining(self, prev_hash):
         if not len(self.unconfirmed_transactions):
             return False
 
         transaction = check_transaction(self.unconfirmed_transactions)
         last = self.print_previous_block()
-        last_hash = self.prev_hash()
+        last_hash = prev_hash
         timee = time.time()
         index = int(last.index) + 1
         new_block = Ledger(str(index), transaction,
@@ -133,14 +142,13 @@ class BlockChain:
             return new_block, False
 
 
-class Chain:
-    def __init__(self, block):
+class Chainn:
+    def __init__(self, index):
         self.chain = []
-        self.chain.append(block)
-        self.index = int(block.index)
-
+        self.index = int(index)
     # This function is created
     # to display the previous block
+
     def print_previous_block(self):
         return self.chain[-1]
 
@@ -158,23 +166,50 @@ class Chain:
         * The previous_hash referred in the block and the hash of latest block
           in the chain match.
         """
-        previous_hash = block.prevHash
-        print("add_block")
-        print(previous_hash)
-        print(block.prevHash)
-        if previous_hash != block.prevHash:
-            return False
+        if len(self.chain) > 0:
+            previous_hash = block.prevHash
+            print("add_block")
+            print(previous_hash)
+            print(block.prevHash)
+            if previous_hash != block.prevHash:
+                return False
 
-        if not self.is_valid_hash(block, hash):
-            return False
+            if not self.is_valid_hash(block, hash):
+                return False
 
-        self.chain.append(block)
-        return True
+            self.chain.append(block)
+            return True
+        else:
+            self.chain.append(block)
+            return True
 
-    def mining(self, block):
-        hash = block.block_hash
-        x = self.add_block(block, hash)
-        print(x)
+    def mining(self, transaction, prev_hash):
+        if len(self.chain) == 0:
+            index = self.index
+            print(index)
+            transactionn = check_transaction(transaction)
+            timee = time.time()
+            new_block = Ledger(str(index), transactionn,
+                               str(timee), prev_hash)
+            hash = new_block.block_hash
+            x = self.add_block(new_block, hash)
+            print(x)
+        else:
+            last = self.print_previous_block()
+            last_hash = prev_hash
+            timee = time.time()
+            transactionn = check_transaction(transaction)
+            index = int(last.index) + 1
+            new_block = Ledger(str(index), transactionn,
+                               str(timee), last_hash)
+            hash = new_block.block_hash
+            x = self.add_block(new_block, hash)
+            print(x)
+        if x:
+            self.unconfirmed_transactions = []
+            return new_block.index, True
+        else:
+            return new_block, False
 
 # function to generate random transactions
 
@@ -195,46 +230,56 @@ def check_transaction(transaction):
     return concat_tr
 
 
-"""
+# First for loop to generate the main Block:
+main_chain = BlockChain()
 
-transaction = [t1, t2]
-transaction = check_transaction(transaction)
-timex = time.time()
-first_block = Ledger("1", transaction, str(timex), "AAA")
-print(first_block.blockTotalData)
-print(first_block.block_hash)
+for x in range(4):
+    t1 = generation()
+    main_chain.add_new_transaction(t1)
+    t2 = generation()
+    main_chain.add_new_transaction(t2)
+    t3 = generation()
+    main_chain.add_new_transaction(t3)
+    prev_hash_main = main_chain.prev_hash()
+    main_chain.mining(prev_hash_main)
+    print(x)
 
-"""
-chainn = BlockChain()
-t1 = generation()
-# print(t1)
-chainn.add_new_transaction(t1)
-t2 = generation()
-# print(t2)
-chainn.add_new_transaction(t2)
-t3 = generation()
-# print(t3)
-chainn.add_new_transaction(t3)
-index = chainn.mining()
-print(index)
-
-t1 = generation()
-chainn.add_new_transaction(t1)
-t2 = generation()
-chainn.add_new_transaction(t2)
-t3 = generation()
-chainn.add_new_transaction(t3)
-index = chainn.mining()
-print(index)
-
-for x in chainn.chain:
+for x in main_chain.chain:
     print(x.__dict__)
     # print(x.block_hash)
 
-"""
-chainn = chainn.print_previous_block()
-x = chainn.index
-print(chainn)
-print(x)
+prev_hash_attacker = prev_hash_main
+prev_hash_others = prev_hash_main
+attacker_index = len(main_chain.chain)
+other_index = len(main_chain.chain)
+c1 = Chainn(attacker_index)
+c2 = Chainn(attacker_index)
 
-"""
+for x in range(5):
+    for y in range(i):
+        x = random.randint(0, 1000)
+        t1 = generation()
+        main_chain.add_new_transaction(t1)
+        t2 = generation()
+        main_chain.add_new_transaction(t2)
+        t3 = generation()
+        main_chain.add_new_transaction(t3)
+        if x < attacker_precentage:
+            transaction = main_chain.get_unconfirmed_transaction()
+            c1.mining(transaction, prev_hash_attacker)
+            prev_hash_attacker = c1.prev_hash()
+        else:
+            transaction = main_chain.get_unconfirmed_transaction()
+            c2.mining(transaction, prev_hash_others)
+            prev_hash_others = c2.prev_hash()
+
+
+print("Printing of C1")
+for x in c1.chain:
+    print(x.__dict__)
+    # print(x.block_hash)
+
+print("Printing of C2")
+for x in c2.chain:
+    print(x.__dict__)
+    # print(x.block_hash)
