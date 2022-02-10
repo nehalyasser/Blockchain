@@ -1,11 +1,11 @@
 import hashlib
-from operator import truediv
+from operator import index, truediv
 import string
 import time
 import random
 
 i = 5
-Zeros = 2
+Zeros = 4
 transaction_list = ["Anna Sends Mike 100", "Mike sends Bob 200 LE",
                     "Bob sends Micheal 50 LE", "Anna sends Micheal 170 LE",
                     "Bob sends Anna 60 LE", "Micheal sends Anna 100 LE",
@@ -39,9 +39,10 @@ class Ledger:
 
     def calculate_proof_work(self):
 
+        proof=0
         proofFound = False
         while proofFound == False:
-            proof = ''.join(random.choice(string.digits) for x in range(64))
+            #proof = ''.join(random.choice(string.digits) for x in range(64))
             # block= self.index + self.transactions + self.timestamp+ self.proof + self.precHash + self.proof
             # print(proof)
             block = str(self.index) + " - " + self.transactions + " - " + \
@@ -54,7 +55,9 @@ class Ledger:
             if proofFound is True:
                 # print(proof)
                 # print(self.index)
-                return proof
+                return str(proof)
+            else:
+                proof+=1
         return -1
 
     def compute_hash(self):
@@ -210,6 +213,18 @@ class Chainn:
             return new_block.index, True
         else:
             return new_block, False
+    def longest_chain(self, compared_chain):
+        first_chain_last_index = self.print_previous_block().index;
+        second_chain_last_index = compared_chain.print_previous_block().index;
+        
+        if first_chain_last_index > second_chain_last_index:
+            return self
+        else:
+            return compared_chain
+
+          
+            
+
 
 # function to generate random transactions
 
@@ -229,10 +244,20 @@ def check_transaction(transaction):
     transaction = concat_tr
     return concat_tr
 
+def append_longest_chain(c1,main):
+        #check if the last element in main chain needs to be replaced
+        start=int(c1.index)
+        if(((len(main.chain))-1) == start):
+            main.chain[start]=c1.chain[0]
+            for x in range(1,len(c1.chain)):
+                main.chain.append(c1.chain[x])
+        else:
+            for x in range (len(c1.chain)):
+                main.chain.append(c1.chain[x]);
 
 # First for loop to generate the main Block:
 main_chain = BlockChain()
-
+ti=0
 for x in range(4):
     t1 = generation()
     main_chain.add_new_transaction(t1)
@@ -241,7 +266,11 @@ for x in range(4):
     t3 = generation()
     main_chain.add_new_transaction(t3)
     prev_hash_main = main_chain.prev_hash()
+    time1=time.time()
     main_chain.mining(prev_hash_main)
+    time2=time.time()
+    ti=ti+(time2-time1)
+    Avg_time=ti/4
     print(x)
 
 for x in main_chain.chain:
@@ -274,6 +303,9 @@ for x in range(5):
             prev_hash_others = c2.prev_hash()
 
 
+longest= c1.longest_chain(c2)
+append_longest_chain(longest,main_chain)
+
 print("Printing of C1")
 for x in c1.chain:
     print(x.__dict__)
@@ -283,3 +315,14 @@ print("Printing of C2")
 for x in c2.chain:
     print(x.__dict__)
     # print(x.block_hash)
+
+print("Longest chain is ")
+for x in (c1.longest_chain(c2)).chain:
+    print(x.__dict__)
+
+print("Whole Chain is ")
+for x in main_chain.chain:
+    print(x.__dict__)
+
+print("Average time taken for a block")
+print(Avg_time)
