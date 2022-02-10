@@ -197,8 +197,10 @@ class Chainn:
     def longest_chain(self, compared_chain):
         first_chain_last_index = self.print_previous_block().index
         second_chain_last_index = compared_chain.print_previous_block().index
+        print(first_chain_last_index)
+        print(second_chain_last_index)
 
-        if first_chain_last_index > second_chain_last_index:
+        if ((first_chain_last_index) > (second_chain_last_index)):
             return self
         else:
             return compared_chain
@@ -223,13 +225,13 @@ def check_transaction(transaction):
     return concat_tr
 
 
-def append_longest_chain(c1, main):
+def append_longest_chain(c, main):
     # check if the last element in main chain needs to be replaced
-    start = int(c1.index)
+    start = int(c.index)
     if(((len(main.chain))-1) == start):
-        main.chain[start] = c1.chain[0]
-        for x in range(1, len(c1.chain)):
-            main.chain.append(c1.chain[x])
+        main.chain[start] = c.chain[0]
+        for x in range(1, len(c.chain)):
+            main.chain.append(c.chain[x])
     else:
         for x in range(len(c1.chain)):
             main.chain.append(c1.chain[x])
@@ -253,6 +255,7 @@ for x in range(4):
     Avg_time = ti/4
     #print(x)
 
+print("Chain before attacking:")
 for x in main_chain.chain:
     print(x.__dict__)
     # print(x.block_hash)
@@ -286,21 +289,21 @@ for x in range(5):
 longest = c1.longest_chain(c2)
 append_longest_chain(longest, main_chain)
 
-print("Printing of minors branch")
+print("Printing of attacker branch")
 for x in c1.chain:
     print(x.__dict__)
 
-print("Printing of attacking branch")
+print("Printing of minors branch")
 for x in c2.chain:
     print(x.__dict__)
 
 print("Longest branch is ")
-for x in (c1.longest_chain(c2)).chain:
+for x in (longest.chain):
     print(x.__dict__)
 
-print("Whole Chain after attacking is ")
+print("Whole Chain after appending the longest branch is ")
 for x in main_chain.chain:
     print(x.__dict__)
 
-print("Average time taken for mining a block")
+print("Average time taken for a block")
 print(Avg_time)
