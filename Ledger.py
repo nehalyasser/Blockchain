@@ -32,32 +32,23 @@ class Ledger:
         self.blockTotalData = self.index + \
             " - " + self.transactions + " - " + self.timestamp + \
             " - " + self.prevHash + " - " + self.proof
-        # blockString= self.index + self.transactions + self.timestamp+ self.proof + self.precHash + self.proof
-        # print(self.blockTotalData)
         self.block_hash = self.compute_hash()
-        # print(block_hash)
 
     def calculate_proof_work(self):
 
-        proof=0
+        proof = 0
         proofFound = False
         while proofFound == False:
-            #proof = ''.join(random.choice(string.digits) for x in range(64))
-            # block= self.index + self.transactions + self.timestamp+ self.proof + self.precHash + self.proof
-            # print(proof)
             block = str(self.index) + " - " + self.transactions + " - " + \
                 str(self.timestamp) + " - " + \
                 self.prevHash + " - " + str(proof)
             blockHash = hashlib.sha256(block.encode()).hexdigest()
             if blockHash.startswith('0' * Zeros):
-                # print(blockHash)
                 proofFound = True
             if proofFound is True:
-                # print(proof)
-                # print(self.index)
                 return str(proof)
             else:
-                proof+=1
+                proof += 1
         return -1
 
     def compute_hash(self):
@@ -89,8 +80,6 @@ class BlockChain:
         return ((self.print_previous_block()).block_hash)
 
     def add_new_transaction(self, transaction):
-        # print(len(self.unconfirmed_transactions))
-        # print(transaction)
         self.unconfirmed_transactions.append(transaction)
 
     def get_unconfirmed_transaction(self):
@@ -110,24 +99,17 @@ class BlockChain:
           in the chain match.
         """
         previous_hash = (self.prev_hash())
-        print("add_block")
-        # print(previous_hash)
-        # print(block.prevHash)
         if previous_hash != block.prevHash:
             self.unconfirmed_transactions = []
             return False, block.transactions
-
         if not self.is_valid_hash(block, hash):
             return False
-
-        #block.hash = hash
         self.chain.append(block)
         return True
 
     def mining(self, prev_hash):
         if not len(self.unconfirmed_transactions):
             return False
-
         transaction = check_transaction(self.unconfirmed_transactions)
         last = self.print_previous_block()
         last_hash = prev_hash
@@ -137,7 +119,6 @@ class BlockChain:
                            str(timee), last_hash)
         hash = new_block.block_hash
         x = self.add_block(new_block, hash)
-        print(x)
         if x:
             self.unconfirmed_transactions = []
             return new_block.index, True
@@ -171,9 +152,6 @@ class Chainn:
         """
         if len(self.chain) > 0:
             previous_hash = block.prevHash
-            print("add_block")
-            print(previous_hash)
-            print(block.prevHash)
             if previous_hash != block.prevHash:
                 return False
 
@@ -189,14 +167,12 @@ class Chainn:
     def mining(self, transaction, prev_hash):
         if len(self.chain) == 0:
             index = self.index
-            print(index)
             transactionn = check_transaction(transaction)
             timee = time.time()
             new_block = Ledger(str(index), transactionn,
                                str(timee), prev_hash)
             hash = new_block.block_hash
             x = self.add_block(new_block, hash)
-            print(x)
         else:
             last = self.print_previous_block()
             last_hash = prev_hash
@@ -207,23 +183,20 @@ class Chainn:
                                str(timee), last_hash)
             hash = new_block.block_hash
             x = self.add_block(new_block, hash)
-            print(x)
         if x:
             self.unconfirmed_transactions = []
             return new_block.index, True
         else:
             return new_block, False
+
     def longest_chain(self, compared_chain):
-        first_chain_last_index = self.print_previous_block().index;
-        second_chain_last_index = compared_chain.print_previous_block().index;
-        
+        first_chain_last_index = self.print_previous_block().index
+        second_chain_last_index = compared_chain.print_previous_block().index
+
         if first_chain_last_index > second_chain_last_index:
             return self
         else:
             return compared_chain
-
-          
-            
 
 
 # function to generate random transactions
@@ -244,20 +217,22 @@ def check_transaction(transaction):
     transaction = concat_tr
     return concat_tr
 
-def append_longest_chain(c1,main):
-        #check if the last element in main chain needs to be replaced
-        start=int(c1.index)
-        if(((len(main.chain))-1) == start):
-            main.chain[start]=c1.chain[0]
-            for x in range(1,len(c1.chain)):
-                main.chain.append(c1.chain[x])
-        else:
-            for x in range (len(c1.chain)):
-                main.chain.append(c1.chain[x]);
+
+def append_longest_chain(c1, main):
+    # check if the last element in main chain needs to be replaced
+    start = int(c1.index)
+    if(((len(main.chain))-1) == start):
+        main.chain[start] = c1.chain[0]
+        for x in range(1, len(c1.chain)):
+            main.chain.append(c1.chain[x])
+    else:
+        for x in range(len(c1.chain)):
+            main.chain.append(c1.chain[x])
+
 
 # First for loop to generate the main Block:
 main_chain = BlockChain()
-ti=0
+ti = 0
 for x in range(4):
     t1 = generation()
     main_chain.add_new_transaction(t1)
@@ -266,11 +241,11 @@ for x in range(4):
     t3 = generation()
     main_chain.add_new_transaction(t3)
     prev_hash_main = main_chain.prev_hash()
-    time1=time.time()
+    time1 = time.time()
     main_chain.mining(prev_hash_main)
-    time2=time.time()
-    ti=ti+(time2-time1)
-    Avg_time=ti/4
+    time2 = time.time()
+    ti = ti+(time2-time1)
+    Avg_time = ti/4
     print(x)
 
 for x in main_chain.chain:
@@ -303,18 +278,16 @@ for x in range(5):
             prev_hash_others = c2.prev_hash()
 
 
-longest= c1.longest_chain(c2)
-append_longest_chain(longest,main_chain)
+longest = c1.longest_chain(c2)
+append_longest_chain(longest, main_chain)
 
 print("Printing of C1")
 for x in c1.chain:
     print(x.__dict__)
-    # print(x.block_hash)
 
 print("Printing of C2")
 for x in c2.chain:
     print(x.__dict__)
-    # print(x.block_hash)
 
 print("Longest chain is ")
 for x in (c1.longest_chain(c2)).chain:
