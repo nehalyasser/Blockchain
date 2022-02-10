@@ -249,11 +249,11 @@ for x in main_chain.chain:
     # print(x.block_hash)
 
 prev_hash_attacker = prev_hash_main
-prev_hash_others = prev_hash_main
-attacker_index = len(main_chain.chain)
+prev_hash_others = main_chain.prev_hash()
+attacker_index = len(main_chain.chain) - 1
 other_index = len(main_chain.chain)
 c1 = Chainn(attacker_index)
-c2 = Chainn(attacker_index)
+c2 = Chainn(other_index)
 
 for x in range(5):
     for y in range(i):
